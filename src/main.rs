@@ -4,36 +4,77 @@ fn main() {
     println!("Hello, world!");
 }
 
-mod part {
-    use crate::ablity::Ability;
-    pub struct Part {
-        parts_inside: Vec<Part>,
-        parts_outside: Vec<Part>,
-        ablities: Vec<Ability>,
-        strength: Strength,
-        parameter: PartParameter,
-    }
+mod object {
+    use crate::attack::Attack;
+    use crate::attack::ResistAttack;
 
     pub struct Strength {
         strength: f32,
         strength_max: f32,
-        strength_growing_scale: f32,
+        strength_growing_ratio: f32,
         cure_rate: f32,
+        slash_damage_scale: f32,
+        shock_damage_scale: f32,
     }
 
-    pub struct PartParameter {
-        size: f32,
-        energy_efficiency: f32,
+    impl Strength {
+        pub fn take_damage(&mut self, attack: &Attack) {
+            let attack = self.resist_attack(attack);
+            let damage = attack.damage();
+            self.strength -= damage;
+        }
+        pub fn cure(&mut self) -> Result<(), ()> {
+            if self.strength < self.strength_max {
+                self.strength += self.cure_rate;
+                self.grow();
+                Ok(())
+            } else {
+                Err(())
+            }
+        }
+        fn grow(&mut self) {
+            let damage = self.strength_max - self.strength;
+            let addtional_strength = damage * self.strength_growing_ratio;
+            self.strength_max += addtional_strength;
+        }
     }
 
-    struct AttackResistance {
-        slash: f32,
-        shock: f32,
+    impl ResistAttack for Strength {
+        fn resist_attack(&self, Attack { slash, shock }: &Attack) -> Attack {
+            let slash = slash * self.slash_damage_scale;
+            let shock = shock * self.shock_damage_scale;
+            Attack { slash, shock }
+        }
     }
-}
 
-mod object {
-    pub trait Breakable
+    mod part {
+        use crate::ablity::Ability;
+        use crate::object::Strength;
+
+        struct EnergyConsumption {
+            idle: f32,
+            action: f32,
+            cure: f32,
+        }
+        pub struct Part {
+            parts_inside: Vec<Part>,
+            parts_outside: Vec<Part>,
+            ablities: Vec<Ability>,
+            strength: Strength,
+            size: f32,
+            energy_consumption: EnergyConsumption,
+        }
+
+        impl Part {
+            pub fn idle(&self, energy: f32) -> f32 {
+                energy -= self.energy_consumption.idle;
+                if self.strength.cure().is_ok() {
+                    energy -= self.energy_consumption.cure;
+                }
+                energy
+            }
+        }
+    }
 }
 
 mod attack {
@@ -42,15 +83,14 @@ mod attack {
         shock: f32,
     }
 
-    pub trait CanBeAttacked {
-        fn attacked(&mut self, attack: &Attack);
-        fn slash_reduction_ratio(&self) -> f32;
-        fn shock_reduction_ratio(&self) -> f32;
-        fn resist(&self, Attack { slash, shock }: &Attack) -> Attack {
-            let slash = slash * self.slash_reduction_ratio();
-            let shock = shock * self.shock_reduction_ratio();
-            Attack { slash, shock }
+    impl Attack {
+        fn damage(&self) -> f32 {
+            self.slash + self.shock
         }
+    }
+
+    pub trait ResistAttack {
+        fn resist_attack(&self, attack: &Attack) -> Attack;
     }
 }
 
