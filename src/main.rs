@@ -1,101 +1,43 @@
-use ezui::*;
+mod ability;
+mod attack;
+mod object;
 
 fn main() {
-    println!("Hello, world!");
-}
-
-mod object {
     use crate::attack::Attack;
-    use crate::attack::ResistAttack;
+    use crate::object::creature::CreatureBuilder;
+    use crate::object::creature::EnergyConsumption;
+    use crate::object::creature::PartBuilder;
+    use crate::object::creature::PartSelector;
+    use crate::object::StrengthBuilder;
 
-    pub struct Strength {
-        strength: f32,
-        strength_max: f32,
-        strength_growing_ratio: f32,
-        cure_rate: f32,
-        slash_damage_scale: f32,
-        shock_damage_scale: f32,
-    }
+    let strength = StrengthBuilder::default()
+        .strength_max(100.0)
+        .strength_growing_ratio(0.01)
+        .cure_rate(1.0)
+        .slash_damage_scale(0.7)
+        .shock_damage_scale(0.5)
+        .build()
+        .unwrap();
 
-    impl Strength {
-        pub fn take_damage(&mut self, attack: &Attack) {
-            let attack = self.resist_attack(attack);
-            let damage = attack.damage();
-            self.strength -= damage;
-        }
-        pub fn cure(&mut self) -> Result<(), ()> {
-            if self.strength < self.strength_max {
-                self.strength += self.cure_rate;
-                self.grow();
-                Ok(())
-            } else {
-                Err(())
-            }
-        }
-        fn grow(&mut self) {
-            let damage = self.strength_max - self.strength;
-            let addtional_strength = damage * self.strength_growing_ratio;
-            self.strength_max += addtional_strength;
-        }
-    }
+    let energy_consumption = EnergyConsumption::new(1.0, 1.0, 10.0);
 
-    impl ResistAttack for Strength {
-        fn resist_attack(&self, Attack { slash, shock }: &Attack) -> Attack {
-            let slash = slash * self.slash_damage_scale;
-            let shock = shock * self.shock_damage_scale;
-            Attack { slash, shock }
-        }
-    }
+    let part = PartBuilder::default()
+        .strength(strength)
+        .size(10.0)
+        .energy_consumption(energy_consumption)
+        .build()
+        .unwrap();
 
-    mod part {
-        use crate::ablity::Ability;
-        use crate::object::Strength;
+    let mut creature = CreatureBuilder::default().body(part).build().unwrap();
 
-        struct EnergyConsumption {
-            idle: f32,
-            action: f32,
-            cure: f32,
-        }
-        pub struct Part {
-            parts_inside: Vec<Part>,
-            parts_outside: Vec<Part>,
-            ablities: Vec<Ability>,
-            strength: Strength,
-            size: f32,
-            energy_consumption: EnergyConsumption,
-        }
-
-        impl Part {
-            pub fn idle(&self, energy: f32) -> f32 {
-                energy -= self.energy_consumption.idle;
-                if self.strength.cure().is_ok() {
-                    energy -= self.energy_consumption.cure;
-                }
-                energy
-            }
-        }
-    }
-}
-
-mod attack {
-    pub struct Attack {
-        slash: f32,
-        shock: f32,
-    }
-
-    impl Attack {
-        fn damage(&self) -> f32 {
-            self.slash + self.shock
-        }
-    }
-
-    pub trait ResistAttack {
-        fn resist_attack(&self, attack: &Attack) -> Attack;
-    }
-}
-
-mod ablity {
-    pub enum Ability {
-        Walk,
-    }
+    let target = vec![PartSelector::This];
+    println!("init: {:?}", creature);
+    creature.take_damage(
+        &Attack {
+            slash: 10.0,
+            shock: 5.0,
+        },
+        &target,
+    );
+    println!("attacked: {:?}", creature);
 }
