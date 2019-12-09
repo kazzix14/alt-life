@@ -2,7 +2,24 @@ pub mod creature;
 
 use crate::attack::Attack;
 use crate::attack::ResistAttack;
+use crate::object::creature::Creature;
 use derive_builder::Builder;
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Object {
+    Creature(Creature),
+}
+
+impl Iterator for Object {
+    type Item = ();
+    fn next(&mut self) -> Option<Self::Item> {
+        use Object::*;
+        match self {
+            Creature(creature) => creature.next(),
+        };
+        Some(())
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, Debug, Builder)]
 pub struct Strength {

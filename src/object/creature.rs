@@ -1,12 +1,16 @@
-use crate::ability::Ability;
-use crate::attack::Attack;
-use crate::object::Strength;
+use crate::{ability::Ability, attack::Attack, object::Strength};
+
+use std::collections::VecDeque;
+
 use derive_builder::Builder;
 
 pub type TargetPart = Vec<(PartSelector)>;
 
-#[derive(Debug, Builder)]
+#[derive(Debug, Builder, Clone, PartialEq)]
 pub struct Creature {
+    #[builder(default = "VecDeque::new()")]
+    operation: VecDeque<CreatureOperation>,
+    energy: f32,
     body: Part,
 }
 
@@ -23,6 +27,40 @@ impl Creature {
         }
         part
     }
+
+    fn idle(&mut self) {
+        if let Some(energy_consumption) = self.body.next() {
+            self.energy -= energy_consumption;
+        } else {
+            self.energy = 0.0;
+        };
+    }
+
+    fn is_alive(&mut self) -> bool {
+        0.0 < self.energy
+    }
+}
+
+impl Iterator for Creature {
+    type Item = ();
+    fn next(&mut self) -> Option<Self::Item> {
+        use CreatureOperation::*;
+
+        if self.is_alive() {
+            match self.operation.pop_front() {
+                Some(Idle) => self.idle(),
+                None => self.idle(),
+            }
+            Some(())
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum CreatureOperation {
+    Idle,
 }
 
 #[derive(Clone, Copy, PartialEq, Debug, Builder)]

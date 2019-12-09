@@ -1,0 +1,76 @@
+* {
+    font-size: 20px;
+    font-family: 'DejaVuSansMono';
+
+    color: #eed;
+
+    box-sizing: border-box;
+}
+
+#frame {
+    width: 100%;
+    height: 100%;
+
+    background-color: #245;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+
+.pane {
+    background-color: #222;
+    flex-direction: column;
+}
+
+#left-pane {
+    margin-left: var(--left-pane-margin-left);
+    margin-top: var(--left-pane-margin-top);
+    width: var(--left-pane-width);
+    height: var(--left-pane-height);
+}
+
+#right-pane {
+    margin-left: var(--right-pane-margin-left);
+    margin-top: var(--right-pane-margin-top);
+    width: var(--right-pane-width);
+    height: var(--right-pane-height);
+}
+
+.row {
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+
+.column {
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+#field-view-rect {
+    margin-left: var(--field-view-rect-margin-left);
+    margin-top: var(--field-view-rect-margin-top);
+    width: var(--field-view-rect-width);
+    height: var(--field-view-rect-height);
+
+    background-color: #000;
+}
+
+.field-view-cell{
+    margin-left: var(--field-view-cell-margin-left);
+    margin-top: var(--field-view-cell-margin-top);
+    width: var(--field-view-cell-width);
+    height: var(--field-view-cell-height);
+}
+
+.cell-none { 
+    background-color: #000;
+}
+
+.cell-empty {
+    background-color: #444;
+}
+
+.cell-wall {
+    background-color: #888;
+}

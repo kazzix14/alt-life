@@ -1,10 +1,13 @@
 [package]
 name = "alt-life"
 version = "0.1.0"
-authors = ["Kazzix <kazzix14@gmail.com>"]
+authors = ["kazzix <kazzix14@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.azul]
+path = "azul/cargo/azul"
 
 [dependencies.derive_builder]
 version = "0.9.0"
